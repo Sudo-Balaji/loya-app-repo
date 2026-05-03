@@ -3,7 +3,8 @@ on:
   workflow_dispatch:
 
   push:
-    - master
+    branches:
+      - master
 
 jobs:
   call-central-workflow:
