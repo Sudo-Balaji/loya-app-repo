@@ -1,2 +1,10 @@
-name: pipline
+name: App repo Trigger
+on: 
+  workflow_dispatch:
 
+  push:
+    - master
+
+jobs:
+  call-central-workflow:
+    uses: Sudo-Balaji/loya-central-pipelines/.github/workflows/basic-ci.yaml@master
