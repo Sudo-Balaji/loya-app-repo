@@ -9,3 +9,17 @@ on:
 jobs:
   call-central-workflow:
     uses: Sudo-Balaji/loya-central-pipelines/.github/workflows/basic-ci.yaml@master
+    # THE MAGIC KEYWORD: 'with' is used to pass inputs to the central workflow.
+    with:
+      app_name: "TestApp"
+
+
+
+
+
+
+
+
+
+
+
