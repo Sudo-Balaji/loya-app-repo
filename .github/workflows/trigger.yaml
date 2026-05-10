@@ -6,6 +6,10 @@ on:
     branches:
       - master
 
+    paths:
+      - 'cobol-app/**'
+
+
 jobs:
   call-central-workflow:
     uses: Sudo-Balaji/loya-central-pipelines/.github/workflows/basic-ci.yaml@master
