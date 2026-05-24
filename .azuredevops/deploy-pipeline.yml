@@ -13,10 +13,11 @@ steps:
 - task: Bash@3
   displayName: 'Download Latest Artifact from JFrog'
   env:
-    # THE FIX: This is the official ADO method to securely unlock UI secrets for a bash script
     SECURE_JF_URL: $(JFROG_URL)
     SECURE_JF_USER: $(JFROG_USERNAME)
     SECURE_JF_TOKEN: $(JFROG_TOKEN)
+    # THE FIX: Tell JFrog it is a robot!
+    CI: true
   inputs:
     targetType: 'inline'
     script: |
@@ -26,8 +27,8 @@ steps:
       echo "Downloading the latest ZIP artifact..."
       mkdir -p ./artifact
       
-      # THE FIX: Pass the unlocked credentials directly into the download command
-      jf rt dl "loya-static-libs/*.zip" ./artifact/ \
+      # Use the explicit path to the installed binary just in case
+      /usr/local/bin/jf rt dl "loya-static-libs/*.zip" ./artifact/ \
         --url="$SECURE_JF_URL" \
         --user="$SECURE_JF_USER" \
         --password="$SECURE_JF_TOKEN" \
@@ -35,8 +36,13 @@ steps:
         --sort-order=desc \
         --limit=1
       
-      # Find the downloaded file and rename it to something simple
       ZIP_PATH=$(find ./artifact -name "*.zip" | head -n 1)
+      
+      if [ -z "$ZIP_PATH" ]; then
+        echo "Error: Could not find downloaded ZIP file!"
+        exit 1
+      fi
+      
       echo "Downloaded: $ZIP_PATH"
       mv "$ZIP_PATH" ./latest-deploy.zip
 
