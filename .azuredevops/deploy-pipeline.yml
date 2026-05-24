@@ -29,7 +29,7 @@ steps:
       mkdir -p ./artifact
       
       /usr/local/bin/jf rt dl "loya-static-libs/*.zip" ./artifact/ \
-        --url="$SECURE_JF_URL" \
+        --url="$SECURE_JF_URL"/artifactory \
         --user="$SECURE_JF_USER" \
         --password="$SECURE_JF_TOKEN" \
         --sort-by=created \
