@@ -1,0 +1,32 @@
+name: App Repo Static Files CI
+
+# 1. THE TRIGGERS (Including your PR and branch requirements!)
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+      - develop
+  push:
+    branches:
+      - main
+      - master
+      - develop
+  workflow_dispatch: # Allows you to trigger this manually from the UI
+
+# 2. SECURITY (Best practice: grant read-only access to the repo contents)
+permissions:
+  contents: read
+
+jobs:
+  static-files-ci:
+    name: Call Central Static Files CI
+    # 3. THE BRIDGE: Pointing to the Central Template we just built
+    uses: Sudo-Balaji/loya-central-pipelines/.github/workflows/static-files-ci-template.yml@master
+    
+    # 4. THE DATA: Passing the required parameters
+    with:
+      application_name: "voya-app-repo"
+      # Note: We don't need to pass artifact_prefix or static_file_extensions 
+      # because our Central Repo automatically falls back to the defaults we set!
+
