@@ -73,7 +73,7 @@ steps:
       unzip -o latest-deploy.zip -d deploy_temp
       
       echo "Executing the deployment script!"
-      bash deploy_temp/package-content/scripts/deploy_static.sh /home/azureuser/voya_deploy/static
+      bash deploy_temp/scripts/deploy_static.sh /home/azureuser/voya_deploy/static
       
       echo "Cleaning up temporary files..."
       rm latest-deploy.zip
