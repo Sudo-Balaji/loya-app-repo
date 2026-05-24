@@ -12,26 +12,28 @@ variables:
 steps:
 - task: Bash@3
   displayName: 'Download Latest Artifact from JFrog'
+  env:
+    # THE FIX: This is the official ADO method to securely unlock UI secrets for a bash script
+    SECURE_JF_URL: $(JFROG_URL)
+    SECURE_JF_USER: $(JFROG_USERNAME)
+    SECURE_JF_TOKEN: $(JFROG_TOKEN)
   inputs:
     targetType: 'inline'
     script: |
       echo "Installing JFrog CLI..."
       curl -fL https://install-cli.jfrog.io | sh
-
-      echo "Setting JFrog Environment Variables..."
-      export JF_URL="$(JFROG_URL)"
-      export JF_USER="$(JFROG_USERNAME)"
-      export JF_PASSWORD="$(JFROG_TOKEN)"
-      export CI=true # Tells JFrog CLI this is a robot, NO menus allowed!
-      
-      # echo "Configuring JFrog CLI..."
-      # # Removed ./ so Linux finds the globally installed 'jf' binary
-      # jf c add jfrog-server --url $(JFROG_URL) --user $(JFROG_USERNAME) --password $(JFROG_TOKEN) --interactive=false
       
       echo "Downloading the latest ZIP artifact..."
       mkdir -p ./artifact
-      # Removed ./ from jf here as well
-      jf rt dl "loya-static-libs/*.zip" ./artifact/ --sort-by=created --sort-order=desc --limit=1
+      
+      # THE FIX: Pass the unlocked credentials directly into the download command
+      jf rt dl "loya-static-libs/*.zip" ./artifact/ \
+        --url="$SECURE_JF_URL" \
+        --user="$SECURE_JF_USER" \
+        --password="$SECURE_JF_TOKEN" \
+        --sort-by=created \
+        --sort-order=desc \
+        --limit=1
       
       # Find the downloaded file and rename it to something simple
       ZIP_PATH=$(find ./artifact -name "*.zip" | head -n 1)
