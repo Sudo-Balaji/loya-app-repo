@@ -6,3 +6,5 @@ a:link, a:visited, a:hover, a:active {
   text-decoration: none;
   display: inline-block;
 }   
+
+/* Triggering the CI pipeline test */
