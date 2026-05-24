@@ -1,0 +1,63 @@
+trigger: none # We will trigger this manually for the lab
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+# We will define these secrets in the ADO UI shortly
+variables:
+  - name: JFROG_URL
+  - name: JFROG_USERNAME
+  - name: JFROG_TOKEN
+
+steps:
+- task: Bash@3
+  displayName: 'Download Latest Artifact from JFrog'
+  inputs:
+    targetType: 'inline'
+    script: |
+      echo "Installing JFrog CLI..."
+      curl -fL https://install-cli.jfrog.io | sh
+      
+      echo "Configuring JFrog CLI..."
+      ./jf c add jfrog-server --url $(JFROG_URL) --user $(JFROG_USERNAME) --password $(JFROG_TOKEN) --interactive=false
+      
+      echo "Downloading the latest ZIP artifact..."
+      # This magical command searches loya-static-libs, sorts by newest, and downloads the 1 latest file!
+      ./jf rt dl "loya-static-libs/*.zip" ./artifact/ --sort-by=created --sort-order=desc --limit=1
+      
+      # Find the downloaded file and rename it to something simple
+      ZIP_PATH=$(find ./artifact -name "*.zip" | head -n 1)
+      echo "Downloaded: $ZIP_PATH"
+      mv $ZIP_PATH ./latest-deploy.zip
+
+- task: CopyFilesOverSSH@0    # The Task Identifier
+  displayName: 'Transfer Artifact to Azure VM'
+  inputs:
+    sshEndpoint: 'voya-vm-ssh-connection' # A secure service connection configured in ADO
+    sourceFolder: '$(System.DefaultWorkingDirectory)'  # Where your build files are sitting right now -  sitting in defualt agent-pool dir
+    contents: 'latest-deploy.zip'                   # What files to copy
+    targetFolder: '/home/azureuser/'            # The directory path on your remote machine
+    readyTimeout: '20000'                   # How long to wait for the SSH handshake before failing
+
+- task: SSH@0
+  displayName: 'Extract and Execute Deployment on VM'
+  inputs:
+    sshEndpoint: 'voya-vm-ssh-connection'
+    runOptions: 'inline'
+    inline: |
+      echo "Navigating to home directory..."
+      cd /home/azureuser/
+      
+      echo "Unzipping the artifact..."
+      unzip -o latest-deploy.zip -d deploy_temp
+      
+      echo "Executing the deployment script!"
+      # Pass the target static folder path to the script just like we designed in the CI phase
+      bash deploy_temp/package-content/scripts/deploy_static.sh /home/azureuser/voya_deploy/static
+      
+      echo "Cleaning up temporary files..."
+      rm latest-deploy.zip
+      rm -rf deploy_temp
+      
+      echo "Deployment Complete!"
+
