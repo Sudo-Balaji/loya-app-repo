@@ -19,16 +19,18 @@ steps:
       curl -fL https://install-cli.jfrog.io | sh
       
       echo "Configuring JFrog CLI..."
-      ./jf c add jfrog-server --url $(JFROG_URL) --user $(JFROG_USERNAME) --password $(JFROG_TOKEN) --interactive=false
+      # Removed ./ so Linux finds the globally installed 'jf' binary
+      jf c add jfrog-server --url $(JFROG_URL) --user $(JFROG_USERNAME) --password $(JFROG_TOKEN) --interactive=false
       
       echo "Downloading the latest ZIP artifact..."
-      # This magical command searches loya-static-libs, sorts by newest, and downloads the 1 latest file!
-      ./jf rt dl "loya-static-libs/*.zip" ./artifact/ --sort-by=created --sort-order=desc --limit=1
+      mkdir -p ./artifact
+      # Removed ./ from jf here as well
+      jf rt dl "loya-static-libs/*.zip" ./artifact/ --sort-by=created --sort-order=desc --limit=1
       
       # Find the downloaded file and rename it to something simple
       ZIP_PATH=$(find ./artifact -name "*.zip" | head -n 1)
       echo "Downloaded: $ZIP_PATH"
-      mv $ZIP_PATH ./latest-deploy.zip
+      mv "$ZIP_PATH" ./latest-deploy.zip
 
 - task: CopyFilesOverSSH@0    # The Task Identifier
   displayName: 'Transfer Artifact to Azure VM'
