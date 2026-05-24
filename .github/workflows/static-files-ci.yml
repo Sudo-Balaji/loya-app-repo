@@ -29,4 +29,7 @@ jobs:
       application_name: "voya-app-repo"
       # Note: We don't need to pass artifact_prefix or static_file_extensions 
       # because our Central Repo automatically falls back to the defaults we set!
+    
+    # This passes your JFrog Secrets to the Central Repo!
+    secrets: inherit
 
